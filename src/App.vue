@@ -5,7 +5,7 @@ import { githubDark } from '@fsegurai/codemirror-theme-github-dark'
 import { Codemirror } from 'vue-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
 import { xml } from '@codemirror/lang-xml'
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, type Ref } from 'vue'
 import { useMediaQuery, useDebounceFn } from '@vueuse/core'
 import { prelude } from './prelude'
 
@@ -47,7 +47,7 @@ const prettySVG = ref('')
 const right = ref('svg')
 const bottom = ref('svg')
 
-const preview: Element | null = ref(null)
+const preview: Ref<Element | null> = ref(null)
 
 const isPreferredDark = useMediaQuery('(prefers-color-scheme: dark)')
 
@@ -64,11 +64,11 @@ const jsExtensions = withLang(javascript)
 const xmlExtensions = withLang(xml)
 
 // adapted from https://github.com/vkiryukhin/vkBeautify/blob/master/vkbeautify.js
-var prettifyXml = function (text) {
-  const createShiftArr = (step) => {
+var prettifyXml = function (text: string) {
+  const createShiftArr = (step: string | number) => {
     var space = '    '
 
-    if (isNaN(parseInt(step))) {
+    if (typeof step === 'string') {
       // argument is string
       space = step
     } else {
@@ -153,6 +153,7 @@ var prettifyXml = function (text) {
     } else if (
       /^<\w/.exec(ar[ix - 1]) &&
       /^<\/\w/.exec(ar[ix]) &&
+      // @ts-expect-error
       /^<[\w:\-\.\,]+/.exec(ar[ix - 1]) == /^<\/[\w:\-\.\,]+/.exec(ar[ix])[0].replace('/', '')
     ) {
       // <elm></elm> //
@@ -247,12 +248,14 @@ const meta = ref('no preview')
 watch([svg, preview], () => {
   requestAnimationFrame(() => {
     if (svg.value && preview.value) {
-      const svg = preview.value.children?.[0]
+      const svg = preview.value.children?.[0] as (SVGElement & HTMLElement) | undefined
       if (!svg) {
         meta.value = 'no preview'
         return
       }
+      // @ts-expect-error
       const width = svg.width.baseVal.value
+      // @ts-expect-error
       const height = svg.height.baseVal.value
       meta.value = `${width}×${height}`
     } else {

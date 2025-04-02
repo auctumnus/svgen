@@ -188,7 +188,7 @@ h3.docs {
   position: relative;
 }
 
-svg:not('.icon') {
+svg:not(.icon) {
   border: 1px solid var(--deemphasized);
   background-color: white;
 }
