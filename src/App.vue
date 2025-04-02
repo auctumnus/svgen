@@ -6,10 +6,12 @@ import { Codemirror } from 'vue-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
 import { xml } from '@codemirror/lang-xml'
 import { ref, onMounted, computed, watch, type Ref } from 'vue'
-import { useMediaQuery, useDebounceFn } from '@vueuse/core'
+import { useMediaQuery, useDebounceFn, useStorage } from '@vueuse/core'
 import { prelude } from './prelude'
 
-const code = ref(`// Write JS to make your SVG here!
+const code = useStorage(
+  'js-code',
+  `// Write JS to make your SVG here!
 // There's a variable \`svg\` predefined as an SVG element
 // that will be rendered to the right.
 // Your output SVG code can be seen below.
@@ -40,8 +42,8 @@ svg.appendChild(outer)
 svg.appendChild(svgstar())
 
 svg.setAttribute('viewBox', '0 0 300 300')
-
-`)
+`,
+)
 const svg = ref('')
 const prettySVG = ref('')
 const right = ref('svg')
@@ -65,57 +67,10 @@ const xmlExtensions = withLang(xml)
 
 // adapted from https://github.com/vkiryukhin/vkBeautify/blob/master/vkbeautify.js
 var prettifyXml = function (text: string) {
-  const createShiftArr = (step: string | number) => {
-    var space = '    '
-
-    if (typeof step === 'string') {
-      // argument is string
-      space = step
-    } else {
-      // argument is integer
-      switch (step) {
-        case 1:
-          space = ' '
-          break
-        case 2:
-          space = '  '
-          break
-        case 3:
-          space = '   '
-          break
-        case 4:
-          space = '    '
-          break
-        case 5:
-          space = '     '
-          break
-        case 6:
-          space = '      '
-          break
-        case 7:
-          space = '       '
-          break
-        case 8:
-          space = '        '
-          break
-        case 9:
-          space = '         '
-          break
-        case 10:
-          space = '          '
-          break
-        case 11:
-          space = '           '
-          break
-        case 12:
-          space = '            '
-          break
-      }
-    }
-
+  const createShiftArr = (step: string) => {
     var shift = ['\n'] // array of shifts
     for (ix = 0; ix < 100; ix++) {
-      shift.push(shift[ix] + space)
+      shift.push(shift[ix] + step)
     }
     return shift
   }
@@ -264,9 +219,7 @@ watch([svg, preview], () => {
   })
 })
 
-onMounted(() => {
-  onChange()
-})
+onMounted(onChange)
 </script>
 
 <template>
